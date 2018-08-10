@@ -1,0 +1,13 @@
+# carton snapshot format: version 1.0
+DISTRIBUTIONS
+  Text-CSV-1.95
+    pathname: I/IS/ISHIGAKI/Text-CSV-1.95.tar.gz
+    provides:
+      Text::CSV 1.95
+      Text::CSV::ErrorDiag 1.95
+      Text::CSV_PP 1.95
+    requirements:
+      ExtUtils::MakeMaker 0
+      IO::Handle 0
+      Test::Harness 0
+      Test::More 0.71

@@ -1,0 +1,62 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Data::Dumper;
+use Text::CSV;
+
+## quick and dirty Safari highlights-to-Markdown formatter
+
+use constant {
+    BOOK_TITLE    => 0,
+    CHAPTER       => 2,
+    CHAPTER_URL   => 5,
+    HIGHLIGHT_URL => 6,
+    HIGHLIGHT_TXT => 7,
+    NOTE_TXT      => 8,
+};
+
+my ($file, $title) = @ARGV;
+unless ($file && $title) {
+    die "usage: $0 file.csv 'Book Title' > file.md\n";
+}
+
+open my $fh, "<", $file
+  or die "Unable to open file '$file': $!\n";
+
+my @rows = ();
+
+my $chapter = '';
+
+my $csv = Text::CSV->new({binary => 1, decode_utf8 => 0})
+  or die "Unable to parse: $!\n";
+
+while (my $row = $csv->getline($fh)) {
+    next unless $row->[BOOK_TITLE] eq $title;
+    push @rows, $row;
+}
+
+close $fh;
+
+for my $row (sort { $a->[CHAPTER_URL] cmp $b->[CHAPTER_URL] } @rows) {
+    my @md = ();
+
+    if ($chapter ne $row->[CHAPTER]) {
+        $chapter = $row->[CHAPTER];
+        push @md, "## $chapter";
+    }
+
+    my $url = $row->[HIGHLIGHT_URL];
+    push @md, "[[Link]($url)]:";
+
+    my $highlight = $row->[HIGHLIGHT_TXT];
+    $highlight =~ s/^/> /gm;
+    push @md, $highlight;
+
+    my $note = $row->[NOTE_TXT];
+    push @md, $note if $note;
+
+    print join "\n\n" => @md;
+    print "\n\n";
+}
+
+close $fh;
